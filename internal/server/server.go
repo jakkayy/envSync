@@ -39,6 +39,7 @@ func NewServer(port string) *Server {
 	router := gin.New()
 	router.Use(gin.Recovery())
 	router.Use(middleware.LoggerAndRequestID())
+	router.Use(middleware.MetricsMiddleware())
 
 	s := &Server{
 		router: router,
@@ -60,6 +61,8 @@ func (s *Server) setupRoutes() {
 			"time":   time.Now().Format(time.RFC3339),
 		})
 	})
+
+	s.router.GET("/metrics", middleware.MetricsHandler)
 
 	apiV1 := s.router.Group("/api/v1")
 	apiV1.Use(middleware.AuthRequired())
