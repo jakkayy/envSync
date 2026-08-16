@@ -10,6 +10,8 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/jakkayy/envSync/internal/database"
+	"github.com/jakkayy/envSync/internal/server/handlers"
 	"github.com/jakkayy/envSync/internal/server/middleware"
 )
 
@@ -21,6 +23,17 @@ type Server struct {
 func NewServer(port string) *Server {
 	if os.Getenv("GIN_MODE") == "" {
 		gin.SetMode(gin.ReleaseMode)
+	}
+
+	dbType := os.Getenv("DB_TYPE")
+	dbDSN := os.Getenv("DB_DSN")
+	db, err := database.InitDB(dbType, dbDSN)
+	if err != nil {
+		fmt.Printf("Warning: Database initialization failed: %v\n", err)
+	} else {
+		if err := database.AutoMigrate(db); err != nil {
+			fmt.Printf("Warning: Database auto migration failed: %v\n", err)
+		}
 	}
 
 	router := gin.New()
@@ -47,6 +60,14 @@ func (s *Server) setupRoutes() {
 			"time":   time.Now().Format(time.RFC3339),
 		})
 	})
+
+	apiV1 := s.router.Group("/api/v1")
+	apiV1.Use(middleware.AuthRequired())
+	{
+		apiV1.POST("/projects", handlers.CreateProject)
+		apiV1.POST("/sync/push", handlers.PushSync)
+		apiV1.GET("/sync/pull", handlers.PullSync)
+	}
 }
 
 func (s *Server) Run() error {
