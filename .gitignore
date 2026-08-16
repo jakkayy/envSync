@@ -2,7 +2,7 @@
 /bin/
 /dist/
 envsync
-server
+/bin/server
 
 # Environment variables
 .env
