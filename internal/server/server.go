@@ -65,6 +65,7 @@ func (s *Server) setupRoutes() {
 	apiV1.Use(middleware.AuthRequired())
 	{
 		apiV1.POST("/projects", handlers.CreateProject)
+		apiV1.GET("/projects/:id/history", handlers.GetProjectHistory)
 		apiV1.POST("/sync/push", handlers.PushSync)
 		apiV1.GET("/sync/pull", handlers.PullSync)
 	}
