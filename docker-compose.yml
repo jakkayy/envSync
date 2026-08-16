@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  envsync-server:
+    build:
+      context: .
+      dockerfile: deployments/docker/Dockerfile
+    container_name: envsync-server
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - GIN_MODE=release
+      - DB_TYPE=postgres
+      - DB_DSN=host=postgres user=envsync password=envsync_secret dbname=envsync_db port=5432 sslmode=disable
+      - ENVSYNC_SKIP_AUTH=false
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: envsync-postgres
+    environment:
+      POSTGRES_USER: envsync
+      POSTGRES_PASSWORD: envsync_secret
+      POSTGRES_DB: envsync_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U envsync -d envsync_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
