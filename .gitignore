@@ -1,0 +1,26 @@
+# Binary outputs
+/bin/
+/dist/
+envsync
+server
+
+# Environment variables
+.env
+.env.*
+!.env.example
+.envsync.json
+
+# IDEs and OS
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Go test / coverage
+coverage.out
+*.test
+
+# Database files
+*.db
+*.sqlite
