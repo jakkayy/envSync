@@ -109,3 +109,39 @@ func (c *APIClient) Pull(projectID, envName, version string) (string, int, error
 
 	return res.Payload, res.Version, nil
 }
+
+func (c *APIClient) GetHistory(projectID, envName string) ([]map[string]interface{}, error) {
+	url := fmt.Sprintf("%s/api/v1/projects/%s/history", c.BaseURL, projectID)
+	if envName != "" {
+		url += "?env=" + envName
+	}
+
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create HTTP request: %w", err)
+	}
+
+	if c.AuthToken != "" {
+		req.Header.Set("Authorization", "Bearer "+c.AuthToken)
+	}
+
+	resp, err := c.HTTPClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to send HTTP request to %s: %w", url, err)
+	}
+	defer resp.Body.Close()
+
+	respBody, _ := io.ReadAll(resp.Body)
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("server responded with status %d: %s", resp.StatusCode, string(respBody))
+	}
+
+	var res struct {
+		History []map[string]interface{} `json:"history"`
+	}
+	if err := json.Unmarshal(respBody, &res); err != nil {
+		return nil, fmt.Errorf("failed to parse server response: %w", err)
+	}
+
+	return res.History, nil
+}
