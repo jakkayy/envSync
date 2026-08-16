@@ -1,0 +1,47 @@
+openapi: 3.0.3
+info:
+  title: envSync API
+  description: Platform Engineering Central Server API for envSync CLI
+  version: 1.0.0
+paths:
+  /health:
+    get:
+      summary: Health check endpoint
+      responses:
+        '200':
+          description: Server status up
+  /metrics:
+    get:
+      summary: Prometheus metrics endpoint
+      responses:
+        '200':
+          description: Prometheus metrics
+  /api/v1/projects:
+    post:
+      summary: Register a new project
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                name:
+                  type: string
+      responses:
+        '201':
+          description: Project created
+  /api/v1/sync/push:
+    post:
+      summary: Push encrypted payload to server
+      responses:
+        '200':
+          description: Updated to new version
+  /api/v1/sync/pull:
+    get:
+      summary: Pull latest encrypted payload from server
+      responses:
+        '200':
+          description: Encrypted payload returned
